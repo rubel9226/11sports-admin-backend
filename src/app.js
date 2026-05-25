@@ -10,10 +10,7 @@ const { clientUrl } = require('./secret');
 
 
 app.use(cors({
-    origin: [
-        "https://ag11sportslive.vercel.app",
-        "http://localhost:3000"
-    ],
+    origin: "https://ag11sportslive.vercel.app",
     credentials: true
 }));
 
