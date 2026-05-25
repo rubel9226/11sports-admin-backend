@@ -24,8 +24,10 @@ const isLoggedIn = async (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
     try {
+        
+        const accessToken = req.cookies.accessToken // cookie name math korte  hobe.
 
-        const accessToken = req.cookies?.accessToken // cookie name math korte  hobe.
+        console.log(accessToken)
 
         if(!accessToken){
             throw createError(401, 'Unauthorized');

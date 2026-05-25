@@ -5,7 +5,7 @@ const setAccessTokenCookie = (res, accessToken) => {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        // sameSite: 'lax'
+        sameSite: 'lax'
     });
 }
 

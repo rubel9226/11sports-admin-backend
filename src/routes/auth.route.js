@@ -15,7 +15,7 @@ authRouter.post(
     '/login',
     validateUserLogin,
     runValidation,
-    isLoggedOut,
+    // isLoggedOut,
     handleLogin
 );
 
