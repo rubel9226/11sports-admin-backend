@@ -30,6 +30,10 @@ const handleLogin =async (req, res, next) => {
             throw createError(403, 'your are banned. please contact admin');
         }
 
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken')
+
+
         // token, cookie, create jwt
         const accessToken = createJSONWebToken({user}, jwtAccessKey, '7d');
         setAccessTokenCookie(res, accessToken); // set access cookie
