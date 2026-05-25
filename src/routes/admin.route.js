@@ -1,7 +1,7 @@
 const express = require('express');
 const { validateUserRegistration } = require('../validators/auth');
 const runValidation = require('../validators');
-const { handleAddAdmin } = require('../controllers/user.controller');
+const { handleAddAdmin, handleGetAdmins } = require('../controllers/user.controller');
 const { isLoggedIn } = require('../middlewares/auth');
 const adminRouter = express.Router();
 
@@ -9,7 +9,7 @@ const adminRouter = express.Router();
 
 
 
-
+// POSt /api/admins/register
 adminRouter.post(
     '/register', 
     isLoggedIn,
@@ -17,6 +17,13 @@ adminRouter.post(
     runValidation,
     handleAddAdmin
 );
+
+// GET /api/admins
+adminRouter.get(
+    '/',
+    isLoggedIn,
+    handleGetAdmins
+)
 
 
 
