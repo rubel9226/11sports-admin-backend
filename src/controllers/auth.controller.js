@@ -14,6 +14,7 @@ const handleLogin =async (req, res, next) => {
     try {
         const {userName, password} = req.body;
 
+        // is Exist
         const user = await Admin.findOne({userName: userName});
         if(!user){
             throw createError(404, 'Login name or password is invalid! Please try again.')
@@ -30,12 +31,8 @@ const handleLogin =async (req, res, next) => {
             throw createError(403, 'your are banned. please contact admin');
         }
 
-        res.clearCookie('accessToken');
-        res.clearCookie('refreshToken')
-
-
         // token, cookie, create jwt
-        const accessToken = createJSONWebToken({user}, jwtAccessKey, '7d');
+        const accessToken = createJSONWebToken({user}, jwtAccessKey, '15m');
         setAccessTokenCookie(res, accessToken); // set access cookie
         
         const refreshToken = createJSONWebToken({user}, jwtRefreshKey, '7d')
@@ -72,8 +69,21 @@ const handleLoginMe = async (req, res, next) => {
 
 const handleLogout = async (req, res, next) => {
     try {
-        res.clearCookie('accessToken');
-        res.clearCookie('refreshToken')
+        // res.clearCookie('accessToken');
+        // res.clearCookie('refreshToken');
+
+        res.clearCookie('accessToken',{ 
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none'
+        });
+        
+        res.clearCookie('refreshToken', { 
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none'
+        });
+    
 
         // success response
         return successResponse(res, {

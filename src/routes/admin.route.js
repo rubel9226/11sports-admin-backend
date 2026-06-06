@@ -31,7 +31,7 @@ adminRouter.get(
     '/',
     isLoggedIn,
     handleGetBalance
-)
+);
 
 
 
