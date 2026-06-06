@@ -61,7 +61,7 @@ const handleAddAdmin =async (req, res, next) => {
 };
 
 
-
+// get admins
 const handleGetAdmins =async (req, res, next) => {
     try {
         const adminId = req.user._id;
@@ -84,9 +84,34 @@ const handleGetAdmins =async (req, res, next) => {
 };
 
 
+// get all balance
+const handleGetBalance =async (req, res, next) => {
+    try {
+        const adminId = req.user._id;
+
+        if(!adminId){
+            throw createError(404, 'Please login first.');
+        } 
+        
+        const users =await Admin.find({adminId})
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Admin is Create successfully.',
+            payload: users
+            // payload: newUser
+        });
+    } catch (error) {
+        next(error);   
+    }
+};
+
+
+
 
 module.exports = {
     handleAddAdmin,
-    handleGetAdmins
+    handleGetAdmins, 
+    handleGetBalance
     
 }

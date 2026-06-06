@@ -1,7 +1,7 @@
 const express = require('express');
 const { validateUserRegistration } = require('../validators/auth');
 const runValidation = require('../validators');
-const { handleAddAdmin, handleGetAdmins } = require('../controllers/user.controller');
+const { handleAddAdmin, handleGetAdmins, handleGetBalance } = require('../controllers/user.controller');
 const { isLoggedIn } = require('../middlewares/auth');
 const adminRouter = express.Router();
 
@@ -23,6 +23,14 @@ adminRouter.get(
     '/',
     isLoggedIn,
     handleGetAdmins
+)
+
+
+// GET /api/admins
+adminRouter.get(
+    '/',
+    isLoggedIn,
+    handleGetBalance
 )
 
 
