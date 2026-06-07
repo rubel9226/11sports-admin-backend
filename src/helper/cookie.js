@@ -4,8 +4,8 @@ const setAccessTokenCookie = (res, accessToken) => {
         // maxAge: 7 * 24* 60 * 60 * 1000, // 7 days
         httpOnly: true,
         path: "/",
-        secure: true,
-        sameSite: 'none',
+        // secure: true,
+        // sameSite: 'none',
         // sameSite: 'lax'
     });
 }
@@ -16,8 +16,8 @@ const setRefreshTokenCookie = (res, refreshToken) => {
         maxAge: 7 * 24* 60 * 60 * 1000, // 7 days
         httpOnly: true,
         path: "/",
-        secure: true,
-        sameSite: 'none'
+        // secure: true,
+        // sameSite: 'none'
         // sameSite: 'lax'
     });
 }

@@ -64,7 +64,7 @@ const handleAddAdmin =async (req, res, next) => {
 // get admins
 const handleGetAdmins =async (req, res, next) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.user._id; 
 
         if(!adminId){
             throw createError(404, 'Please login first.');

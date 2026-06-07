@@ -102,21 +102,36 @@ const handleLogout = async (req, res, next) => {
 
 const handleRefreshToken = async (req, res, next) => {
     try {
-        const oldRefreshToken = req.cookies.refreshToken;
+        const oldRefreshToken = req.cookies.refreshToken ; 
+
+        console.log(oldRefreshToken);
 
         // verify the old refresh token
+
+        console.log('decode token before')
+
         const decodedToken = jwt.verify(oldRefreshToken, jwtRefreshKey);
+
+        console.log('decode token after')
+
         if(!decodedToken){
             throw createError(401, 'Invalid refresh token. Please login again');
         }
         
         const user = decodedToken.user;
         // create access token
+
+        console.log('hi all tumi balo manush')
+
+
         const accessToken = createJSONWebToken(
             { user }, 
             jwtAccessKey, 
             '15m'
         );
+
+        console.log('tumi ke ')
+
         // set access token on cookie
         setAccessTokenCookie(res, accessToken)
 

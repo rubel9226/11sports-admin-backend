@@ -4,7 +4,8 @@ const { jwtAccessKey } = require("../secret");
 
 const isLoggedIn = async (req, res, next) => {
     try {
-        const accessToken = req.cookies?.accessToken;
+        const accessToken = req.cookies?.accessToken; 
+
         if(!accessToken){
             throw createError(401, 'Access token not found. Please login')
         };
@@ -24,8 +25,8 @@ const isLoggedIn = async (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
     try {
-        const accessToken = req.cookies.accessToken // cookie name math korte  hobe.
-
+        const accessToken = req.cookies.accessToken;
+        
         console.log(accessToken, 'access Token');
 
         if(!accessToken){
