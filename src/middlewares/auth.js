@@ -16,7 +16,7 @@ const isLoggedIn = async (req, res, next) => {
         req.user = decoded.user;
         next();
     } catch (error) {
-        return next(error)
+        next(error)
     }
 };
 
@@ -24,7 +24,6 @@ const isLoggedIn = async (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
     try {
-        
         const accessToken = req.cookies.accessToken // cookie name math korte  hobe.
 
         console.log(accessToken)
@@ -34,11 +33,10 @@ const verifyToken = (req, res, next) => {
         }
         const decoded = jwt.verify(accessToken, jwtAccessKey);
         
-        req.user = decoded.user;
-        // console.log(decoded.user)
+        req.user = decoded.user; 
         next();
     } catch (error) {
-        throw next(error);
+        next(error);
     }
 };
 
@@ -59,7 +57,7 @@ const isLoggedOut = async (req, res, next) => {
     
         next();
     } catch (error) {
-        return next(error)
+        next(error)
     }
 };
 
