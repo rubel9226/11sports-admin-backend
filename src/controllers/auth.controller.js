@@ -55,13 +55,15 @@ const handleLoginMe = async (req, res, next) => {
     try {
         const user = await Admin.findById(req.user._id).select('-password');
 
-        console.log(user, 'users');
+        console.log(user, 'user')
+        
         return successResponse(res, {
             statusCode: 200, 
             message: 'User fetched successfully',
             payload: user,
         })
     } catch (error) {
+        console.log(error);
         next(error)
     }
 }

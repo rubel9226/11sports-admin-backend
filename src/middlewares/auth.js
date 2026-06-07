@@ -26,7 +26,7 @@ const verifyToken = (req, res, next) => {
     try {
         const accessToken = req.cookies.accessToken // cookie name math korte  hobe.
 
-        console.log(accessToken)
+        console.log(accessToken, 'access Token');
 
         if(!accessToken){
             throw createError(401, 'Unauthorized');
@@ -44,6 +44,7 @@ const verifyToken = (req, res, next) => {
 const isLoggedOut = async (req, res, next) => {
     try {
         const accessToken = req.cookies.accessToken;
+        
         if(accessToken){
             try {
                 const decoded = jwt.verify(accessToken, jwtAccessKey);
