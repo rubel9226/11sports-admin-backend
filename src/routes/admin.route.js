@@ -1,7 +1,7 @@
 const express = require('express');
 const { validateUserRegistration } = require('../validators/auth');
 const runValidation = require('../validators');
-const { handleAddAdmin, handleGetAdmins, handleGetBalance } = require('../controllers/user.controller');
+const { handleAddAdmin, handleGetAdmins, handleGetBalance, handleDepositWithdraw, handleBanUnbanCasino } = require('../controllers/user.controller');
 const { isLoggedIn } = require('../middlewares/auth');
 const adminRouter = express.Router();
 
@@ -18,6 +18,22 @@ adminRouter.post(
     handleAddAdmin
 );
 
+
+// PUT /api/admins/register
+adminRouter.put(
+    '/deposit-withdraw/:id', 
+    isLoggedIn, 
+    handleDepositWithdraw
+);
+
+
+// PUT /api/admins/register
+adminRouter.put(
+    '/casino-ban/:id', 
+    isLoggedIn, 
+    handleBanUnbanCasino
+);
+
 // GET /api/admins
 adminRouter.get(
     '/',
@@ -27,11 +43,11 @@ adminRouter.get(
 
 
 // GET /api/admins
-adminRouter.get(
-    '/',
-    isLoggedIn,
-    handleGetBalance
-);
+// adminRouter.get(
+//     '/',
+//     isLoggedIn,
+//     handleGetBalance
+// );
 
 
 

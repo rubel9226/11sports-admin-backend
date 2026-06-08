@@ -9,6 +9,11 @@ const adminSchema = new Schema(
       ref: "Admins",
       default: null,
     },
+    refer: {
+      type: String,
+      trim: true,
+      unique: [true, 'refer code already exist']
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -59,9 +64,18 @@ const adminSchema = new Schema(
       default: 0,
     },
 
-    isBanned: {
+    isCasino: {
       type: Boolean,
-      default: false,
+      default: true,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        'active',
+        'suspend',
+        'locked'
+      ]
     },
 
     role: {

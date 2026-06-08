@@ -54,8 +54,6 @@ const handleLogin =async (req, res, next) => {
 const handleLoginMe = async (req, res, next) => {
     try {
         const user = await Admin.findById(req.user._id).select('-password');
-
-        console.log(user, 'user')
         
         return successResponse(res, {
             statusCode: 200, 
@@ -63,7 +61,6 @@ const handleLoginMe = async (req, res, next) => {
             payload: user,
         })
     } catch (error) {
-        console.log(error);
         next(error)
     }
 }
@@ -104,24 +101,13 @@ const handleRefreshToken = async (req, res, next) => {
     try {
         const oldRefreshToken = req.cookies.refreshToken ; 
 
-        console.log(oldRefreshToken);
-
-        // verify the old refresh token
-
-        console.log('decode token before')
-
-        const decodedToken = jwt.verify(oldRefreshToken, jwtRefreshKey);
-
-        console.log('decode token after')
+        const decodedToken = jwt.verify(oldRefreshToken, jwtRefreshKey); 
 
         if(!decodedToken){
             throw createError(401, 'Invalid refresh token. Please login again');
         }
         
         const user = decodedToken.user;
-        // create access token
-
-        console.log('hi all tumi balo manush')
 
 
         const accessToken = createJSONWebToken(
@@ -130,13 +116,10 @@ const handleRefreshToken = async (req, res, next) => {
             '15m'
         );
 
-        console.log('tumi ke ')
-
         // set access token on cookie
         setAccessTokenCookie(res, accessToken)
 
-        req.user = decodedToken.user;
-        // success response
+        req.user = decodedToken.user; 
         return successResponse(res, {
             statusCode: 200, 
             message: 'new access token is genareted',

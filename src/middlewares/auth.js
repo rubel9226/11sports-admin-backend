@@ -26,8 +26,6 @@ const isLoggedIn = async (req, res, next) => {
 const verifyToken = (req, res, next) => {
     try {
         const accessToken = req.cookies.accessToken;
-        
-        console.log(accessToken, 'access Token');
 
         if(!accessToken){
             throw createError(401, 'Unauthorized');
