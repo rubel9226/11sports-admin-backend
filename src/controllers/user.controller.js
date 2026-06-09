@@ -37,15 +37,17 @@ const handleAddAdmin =async (req, res, next) => {
 
         
         const newRole = roleHierarchy[currentAdmin.role];
-
+        console.log(newRole, 'new role');
 
         const isValid = ['userName', 'fullName', 'email', 'phone', 'password'];
         isValid.map((value) => {
             if(req.body[value]){
                 data[value] = req.body[value]
             }
-        });
+        }); 
+
         const newUser =await Admin.create(data);
+        console.log(newUser);
 
         return successResponse(res, {
             statusCode: 200,
@@ -204,29 +206,7 @@ const handleGetAdmins =async (req, res, next) => {
 
         if(!adminId){
             throw createError(404, 'Please login first.');
-        }
-
-        // const childFilterCondition = {
-        //     $and: [
-        //         {
-        //             $eq: ["$$item.role", nextRole]
-        //         },
-        //         search
-        //             ? {
-        //                 $regexMatch: {
-        //                     input: "$$item.userName",
-        //                     regex: search,
-        //                     options: "i"
-        //                 }
-        //             }
-        //             : {},
-        //         status
-        //             ? {
-        //                 $eq: ["$$item.status", status.toLowerCase()]
-        //             }
-        //             : {}
-        //     ]
-        // };
+        } 
 
 
         const roleHierarchy = {
@@ -251,7 +231,7 @@ const handleGetAdmins =async (req, res, next) => {
             }, 
             {
                 $graphLookup: {
-                    from: "admins",
+                    from: "users",
                     startWith: "$_id",
                     connectFromField: "_id",
                     connectToField: "adminId",
@@ -539,7 +519,9 @@ const handleGetAdmins =async (req, res, next) => {
                     downline: 0
                 }
             }
-        ]); 
+        ]);
+
+        console.log(admin, 'admin, users')
 
         return successResponse(res, {
             statusCode: 200,
@@ -616,11 +598,49 @@ const handleBanUnbanCasino =async (req, res, next) => {
 }
 
 
+const handleUpdatePassword =async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        const {password, confirm, yourPassword} = req.body;
+        if(password !== confirm){
+            throw createError(400, 'Password should be same as new password')
+        }
+
+        const isPassword = await bcrypt.compare(
+            password,
+            admin.password
+        );
+
+
+        const newUser = await Admin.findOneAndUpdate(
+            {_id: id},
+            {
+                isCasino: !user.isCasino
+            },
+            {returnDocument: 'after'}
+        );
+        console.log({
+            oldStatus: user.isCasino,
+            newStatus: newUser.isCasino
+        })
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Admin is Create successfully.',
+            payload: newUser 
+        });
+    } catch (error) {
+        next(error);   
+    }
+}
+
+
 
 module.exports = {
     handleAddAdmin,
     handleDepositWithdraw,
     handleGetAdmins, 
     handleGetBalance,
-    handleBanUnbanCasino
+    handleBanUnbanCasino, 
+    handleUpdatePassword
 }

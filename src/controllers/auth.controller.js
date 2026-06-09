@@ -16,9 +16,10 @@ const handleLogin =async (req, res, next) => {
 
         // is Exist
         const user = await Admin.findOne({userName: userName});
-        if(!user){
+
+        if(!user || user?.role === 'user'){
             throw createError(404, 'Login name or password is invalid! Please try again.')
-        }
+        } 
         
         // compare the password
         const isPasswordMatch = await bcrypt.compare(password, user.password);

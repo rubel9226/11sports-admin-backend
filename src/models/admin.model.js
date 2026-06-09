@@ -18,7 +18,6 @@ const adminSchema = new Schema(
       type: String,
       required: [true, "Email is required"],
       trim: true,
-      unique: [true, "Email already exist"],
       lowercase: true,
       match: [ /^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email" ]
     },
@@ -99,6 +98,6 @@ const adminSchema = new Schema(
   }
 );
 
-const Admin = model("Admins", adminSchema);
+const Admin = model("Users", adminSchema);
 
 module.exports = Admin;
