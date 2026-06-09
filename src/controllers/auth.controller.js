@@ -43,7 +43,7 @@ const handleLogin =async (req, res, next) => {
         return successResponse(res, {
             statusCode: 200,
             message: 'User login successfully.',
-            payload: user
+            payload: {user, accessToken}
         })
     } catch (error) {
         next(error)
