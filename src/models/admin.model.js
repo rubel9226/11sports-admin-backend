@@ -74,7 +74,8 @@ const adminSchema = new Schema(
         'active',
         'suspend',
         'locked'
-      ]
+      ],
+      default: 'active'
     },
 
     role: {

@@ -227,10 +227,12 @@ const handleDepositWithdraw = async (req, res, next) => {
 
 const handleTransactionHistory = async (req, res, next) => {
     try {
-        const id = req?.user?._id;
-        console.log(id);
+        const userName = req.params?.name; 
+        const decodedUserName = decodeURIComponent(userName);
         
-        const transactions = await TransactionHistory.find({adminIds: id}).sort({ createdAt: -1 });
+        const admin = await Admin.findOne({userName: decodedUserName}).sort({ createdAt: -1 });
+        
+        const transactions = await TransactionHistory.find({adminIds: admin?.id}).sort({ createdAt: -1 });
         console.log(transactions);
 
         return successResponse(res, {
@@ -245,16 +247,42 @@ const handleTransactionHistory = async (req, res, next) => {
 };
 
 
+//  get single admin
+const handleGetSingleAdmin = async (req, res, next) => {
+    try {
+        const userName = req.params?.name; 
+        const decodedUserName = decodeURIComponent(userName);
+        
+        const admin = await Admin.findOne({userName: decodedUserName}).sort({ createdAt: -1 });
+        
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'statement return successful.',
+            payload: admin
+        });
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+
 // get admins
 const handleGetAdmins =async (req, res, next) => {
-    try {
-        const adminId = req.user._id;
+    try { 
         const search = req?.query?.search || '';
         const status = req?.query?.status || '';
 
+        const userName = req.params?.name; 
+        const decodedUserName = decodeURIComponent(userName);
+
+        const parentAdmin = await Admin.findOne({userName: decodedUserName})
+        console.log(parentAdmin);
         // console.log({search, status})
 
-        if(!adminId){
+
+        if(!parentAdmin?._id){
             throw createError(404, 'Please login first.');
         } 
 
@@ -270,13 +298,13 @@ const handleGetAdmins =async (req, res, next) => {
             agent: "user"
         };
 
-        const nextRole = roleHierarchy[req.user.role]; 
+        const nextRole = roleHierarchy[parentAdmin?.role]; 
 
         // by id
         const [admin] = await Admin.aggregate([
             {
                 $match: {
-                    _id: new mongoose.Types.ObjectId(req.user._id)
+                    _id: new mongoose.Types.ObjectId(parentAdmin?._id)
                 }
             }, 
             {
@@ -569,9 +597,7 @@ const handleGetAdmins =async (req, res, next) => {
                     downline: 0
                 }
             }
-        ]);
-
-        // console.log(admin, 'admin, users')
+        ]); 
 
         return successResponse(res, {
             statusCode: 200,
@@ -681,7 +707,8 @@ const handleUpdateStatus =async (req, res, next) => {
 
 
 const handleUpdatePassword =async (req, res, next) => {
-    try { 
+    try {
+        
         const {password, confirm, yourPassword} = req.body; 
 
 
@@ -740,14 +767,61 @@ const handleUpdatePassword =async (req, res, next) => {
 }
 
 
+const handleUpdatePasswordByMoreAdmin =async (req, res, next) => {
+    try {
+        const userName = req.params?.name; 
+        const decodedUserName = decodeURIComponent(userName);
+        console.log(decodedUserName)        
+        const {password, confirm, yourPassword} = req.body; 
+
+        const admin = await Admin.findOne({userName: decodedUserName});
+        console.log(admin)
+
+        if(password !== confirm){
+            throw createError(400, 'Password should be same as new password')
+        }
+
+        // console.log('user password', req?.user);
+        
+        const isPassword = await bcrypt.compare(
+            yourPassword,
+            admin?.password
+        );
+        // console.log({password, confirm, yourPassword, isPassword});
+        if(!isPassword){
+            throw createError(400, 'Incorrect Password!')
+        }
+
+
+        const newUser = await Admin.findOneAndUpdate(
+            {userName: decodedUserName},
+            {
+                $set: {password: password}
+            },
+            {returnDocument: 'after'}
+        ); 
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Admin is Create successfully.',
+            payload: newUser 
+        });
+    } catch (error) {
+        next(error);   
+    }
+}
+
+
 
 module.exports = {
     handleAddAdmin,
     handleDepositWithdraw,
-    handleGetAdmins, 
+    handleGetAdmins,
+    handleGetSingleAdmin,
     handleGetBalance,
     handleTransactionHistory,
     handleBanUnbanCasino,
     handleUpdateStatus,
-    handleUpdatePassword
+    handleUpdatePassword, 
+    handleUpdatePasswordByMoreAdmin
 }

@@ -1,7 +1,7 @@
 const express = require('express');
 const { validateUserRegistration } = require('../validators/auth');
 const runValidation = require('../validators');
-const { handleAddAdmin, handleGetAdmins, handleGetBalance, handleDepositWithdraw, handleBanUnbanCasino, handleUpdatePassword, handleUpdateStatus, handleTransactionHistory } = require('../controllers/user.controller');
+const { handleAddAdmin, handleGetAdmins, handleGetBalance, handleDepositWithdraw, handleBanUnbanCasino, handleUpdatePassword, handleUpdateStatus, handleTransactionHistory, handleGetSingleAdmin, handleUpdatePasswordByMoreAdmin } = require('../controllers/user.controller');
 const { isLoggedIn } = require('../middlewares/auth');
 const adminRouter = express.Router();
 
@@ -29,7 +29,7 @@ adminRouter.put(
 
 // PUT /api/admins/register
 adminRouter.get(
-    '/transaction-history', 
+    '/transaction-history/:name', 
     isLoggedIn, 
     handleTransactionHistory
 );
@@ -58,36 +58,29 @@ adminRouter.put(
     handleUpdatePassword
 );
 
+
+// PUT /api/admins/register
+adminRouter.put(
+    '/update-password/:name', 
+    isLoggedIn, 
+    handleUpdatePasswordByMoreAdmin
+);
+
+
 // GET /api/admins
 adminRouter.get(
-    '/',
+    '/single-admin/:name',
     isLoggedIn,
-    handleGetAdmins
-)
+    handleGetSingleAdmin
+);
 
 
 // GET /api/admins
-// adminRouter.get(
-//     '/',
-//     isLoggedIn,
-//     handleGetBalance
-// );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+adminRouter.get(
+    '/all-admins/:name',
+    isLoggedIn,
+    handleGetAdmins
+);
 
 
 
