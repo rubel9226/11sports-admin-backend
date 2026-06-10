@@ -15,7 +15,7 @@ authRouter.post(
     '/login',
     validateUserLogin,
     runValidation,
-    // isLoggedOut,
+    isLoggedOut,
     handleLogin
 );
 
@@ -25,7 +25,7 @@ authRouter.get('/me', verifyToken, handleLoginMe)
 
 authRouter.post('/logout', isLoggedIn, handleLogout);
 
-
+// get api/auth/refresh-token
 authRouter.get('/refresh-token', handleRefreshToken);
 
 

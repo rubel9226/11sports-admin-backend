@@ -1,9 +1,14 @@
 const createError = require("http-errors");
 const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
 
 const { successResponse } = require("./response.controllers");
 const Admin = require("../models/admin.model");
 const { default: mongoose } = require("mongoose");
+const { jwtAccessKey, jwtRefreshKey } = require("../secret");
+const { setAccessTokenCookie, setRefreshTokenCookie } = require("../helper/cookie");
+const { createJSONWebToken } = require("../helper/jsonwebtoken");
+const TransactionHistory = require("../models/transactionHistory.model");
 
 
 const handleAddAdmin =async (req, res, next) => {
@@ -37,7 +42,7 @@ const handleAddAdmin =async (req, res, next) => {
 
         
         const newRole = roleHierarchy[currentAdmin.role];
-        console.log(newRole, 'new role');
+        // console.log(newRole, 'new role');
 
         const isValid = ['userName', 'fullName', 'email', 'phone', 'password'];
         isValid.map((value) => {
@@ -47,7 +52,7 @@ const handleAddAdmin =async (req, res, next) => {
         }); 
 
         const newUser =await Admin.create(data);
-        console.log(newUser);
+        // console.log(newUser);
 
         return successResponse(res, {
             statusCode: 200,
@@ -140,6 +145,18 @@ const handleDepositWithdraw = async (req, res, next) => {
                 { returnDocument: 'after' }
             ).select(' userName balance exposure isBanned role');
 
+            console.log({adminIds: [id, adminId], type: 'deposit', amount: amount, fromAdminName: newAdmin.userName, fromAdminRole: newAdmin.role, balance: updatedTargetAdmin.balance});
+            
+            await TransactionHistory.create({
+                adminIds: [id, adminId], 
+                type: 'deposit', 
+                deposit: amount,
+                amount,
+                fromAdminName: newAdmin.userName, 
+                fromAdminRole: newAdmin.role, 
+                balance: updatedTargetAdmin.balance
+            });
+
             return successResponse(res, {
                 statusCode: 200,
                 message: 'Deposit successful',
@@ -180,6 +197,18 @@ const handleDepositWithdraw = async (req, res, next) => {
                 { returnDocument: 'after' }
             ).select(' userName balance exposure isBanned role');
 
+            console.log({adminIds: [id, adminId], type: 'withdraw', amount: amount, fromAdminName: updatedTargetAdmin.userName, fromAdminRole: updatedTargetAdmin.role, balance: updatedTargetAdmin.balance});
+            
+            await TransactionHistory.create({
+                adminIds: [id, adminId], 
+                type: 'withdraw', 
+                withdraw: amount, 
+                amount,
+                fromAdminName: updatedTargetAdmin.userName, 
+                fromAdminRole: updatedTargetAdmin.role, 
+                balance: updatedTargetAdmin.balance
+            })
+
             return successResponse(res, {
                 statusCode: 200,
                 message: 'Withdraw successful',
@@ -195,6 +224,27 @@ const handleDepositWithdraw = async (req, res, next) => {
 };
 
 
+
+const handleTransactionHistory = async (req, res, next) => {
+    try {
+        const id = req?.user?._id;
+        console.log(id);
+        
+        const transactions = await TransactionHistory.find({adminIds: id}).sort({ createdAt: -1 });
+        console.log(transactions);
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'statement return successful.',
+            payload: transactions
+        });
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+
 // get admins
 const handleGetAdmins =async (req, res, next) => {
     try {
@@ -202,7 +252,7 @@ const handleGetAdmins =async (req, res, next) => {
         const search = req?.query?.search || '';
         const status = req?.query?.status || '';
 
-        console.log({search, status})
+        // console.log({search, status})
 
         if(!adminId){
             throw createError(404, 'Please login first.');
@@ -521,7 +571,7 @@ const handleGetAdmins =async (req, res, next) => {
             }
         ]);
 
-        console.log(admin, 'admin, users')
+        // console.log(admin, 'admin, users')
 
         return successResponse(res, {
             statusCode: 200,
@@ -582,10 +632,42 @@ const handleBanUnbanCasino =async (req, res, next) => {
             },
             {returnDocument: 'after'}
         );
-        console.log({
-            oldStatus: user.isCasino,
-            newStatus: newUser.isCasino
-        })
+        // console.log({
+        //     oldStatus: user.isCasino,
+        //     newStatus: newUser.isCasino
+        // })
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Admin is Create successfully.',
+            payload: newUser 
+        });
+    } catch (error) {
+        next(error);   
+    }
+}
+
+
+const handleUpdateStatus =async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        const { status, password } = req.body; 
+
+        const adminPassword = req?.user?.password
+
+        const isPassword = await bcrypt.compare(password, req?.user.password);
+        // console.log({isPassword, status, password, adminPassword })
+        if(!isPassword){
+            throw createError(400, 'Incorrect Password!')
+        }
+
+        const newUser = await Admin.findOneAndUpdate(
+            {_id: id},
+            {
+                status: status
+            },
+            {returnDocument: 'after'}
+        );
 
         return successResponse(res, {
             statusCode: 200,
@@ -599,35 +681,58 @@ const handleBanUnbanCasino =async (req, res, next) => {
 
 
 const handleUpdatePassword =async (req, res, next) => {
-    try {
-        const {id} = req.params;
-        const {password, confirm, yourPassword} = req.body;
+    try { 
+        const {password, confirm, yourPassword} = req.body; 
+
+
         if(password !== confirm){
             throw createError(400, 'Password should be same as new password')
         }
 
+        // console.log('user password', req?.user);
+        
         const isPassword = await bcrypt.compare(
-            password,
-            admin.password
+            yourPassword,
+            req?.user?.password
         );
+        // console.log({password, confirm, yourPassword, isPassword});
+        if(!isPassword){
+            throw createError(400, 'Incorrect Password!')
+        }
 
 
         const newUser = await Admin.findOneAndUpdate(
-            {_id: id},
+            {_id: req?.user?._id},
             {
-                isCasino: !user.isCasino
+                $set: {password: password}
             },
             {returnDocument: 'after'}
         );
-        console.log({
-            oldStatus: user.isCasino,
-            newStatus: newUser.isCasino
-        })
+
+
+        res.clearCookie('accessToken',{ 
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none'
+        });
+        
+        res.clearCookie('refreshToken', { 
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none'
+        });
+
+        // token, cookie, create jwt
+        const accessToken = createJSONWebToken({user: newUser}, jwtAccessKey, '15m');
+        setAccessTokenCookie(res, accessToken); // set access cookie
+        
+        const refreshToken = createJSONWebToken({user: newUser}, jwtRefreshKey, '7d')
+        setRefreshTokenCookie(res, refreshToken);
 
         return successResponse(res, {
             statusCode: 200,
             message: 'Admin is Create successfully.',
-            payload: newUser 
+            payload: {newUser, accessToken, refreshToken} 
         });
     } catch (error) {
         next(error);   
@@ -641,6 +746,8 @@ module.exports = {
     handleDepositWithdraw,
     handleGetAdmins, 
     handleGetBalance,
-    handleBanUnbanCasino, 
+    handleTransactionHistory,
+    handleBanUnbanCasino,
+    handleUpdateStatus,
     handleUpdatePassword
 }

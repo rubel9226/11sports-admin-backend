@@ -6,7 +6,7 @@ const adminSchema = new Schema(
     adminId: {
       type: Schema.Types.ObjectId,
       required: [true, 'Admin id is required.'],
-      ref: "Admins",
+      ref: "Users",
       default: null,
     },
     refer: {

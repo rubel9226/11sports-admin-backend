@@ -39,11 +39,13 @@ const handleLogin =async (req, res, next) => {
         const refreshToken = createJSONWebToken({user}, jwtRefreshKey, '7d')
         setRefreshTokenCookie(res, refreshToken);
 
+        const userData = user.toObject();
+        delete userData.password
 
         return successResponse(res, {
             statusCode: 200,
             message: 'User login successfully.',
-            payload: {user, accessToken}
+            payload: {userData, accessToken}
         })
     } catch (error) {
         next(error)
