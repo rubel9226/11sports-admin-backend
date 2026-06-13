@@ -29,6 +29,10 @@ const authRouter = require('./routes/auth.route');
 app.use('/api/auth', authRouter);
 
 
+const depositRouter = require('./routes/deposit.route');
+app.use('/api/deposit', depositRouter);
+
+
 
 app.use((req, res, next) => {
     next(createError(404, 'route not found'));

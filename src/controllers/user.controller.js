@@ -17,8 +17,9 @@ const handleAddAdmin =async (req, res, next) => {
         const { userName, fullName, phone, password, } = req.body;
 
         const isExist = await Admin.findOne({userName: userName});
+
         if(isExist){
-            throw createError(404, 'Admin is already exist!')
+            throw createError(404, "User i's already exist!")
         }
         
         const currentAdmin = req.user;    
@@ -145,7 +146,7 @@ const handleDepositWithdraw = async (req, res, next) => {
                 { returnDocument: 'after' }
             ).select(' userName balance exposure isBanned role');
 
-            console.log({adminIds: [id, adminId], type: 'deposit', amount: amount, fromAdminName: newAdmin.userName, fromAdminRole: newAdmin.role, balance: updatedTargetAdmin.balance});
+            // console.log({adminIds: [id, adminId], type: 'deposit', amount: amount, fromAdminName: newAdmin.userName, fromAdminRole: newAdmin.role, balance: updatedTargetAdmin.balance});
             
             await TransactionHistory.create({
                 adminIds: [id, adminId], 
@@ -197,7 +198,7 @@ const handleDepositWithdraw = async (req, res, next) => {
                 { returnDocument: 'after' }
             ).select(' userName balance exposure isBanned role');
 
-            console.log({adminIds: [id, adminId], type: 'withdraw', amount: amount, fromAdminName: updatedTargetAdmin.userName, fromAdminRole: updatedTargetAdmin.role, balance: updatedTargetAdmin.balance});
+            // console.log({adminIds: [id, adminId], type: 'withdraw', amount: amount, fromAdminName: updatedTargetAdmin.userName, fromAdminRole: updatedTargetAdmin.role, balance: updatedTargetAdmin.balance});
             
             await TransactionHistory.create({
                 adminIds: [id, adminId], 
@@ -207,7 +208,7 @@ const handleDepositWithdraw = async (req, res, next) => {
                 fromAdminName: updatedTargetAdmin.userName, 
                 fromAdminRole: updatedTargetAdmin.role, 
                 balance: updatedTargetAdmin.balance
-            })
+            });
 
             return successResponse(res, {
                 statusCode: 200,
@@ -215,9 +216,7 @@ const handleDepositWithdraw = async (req, res, next) => {
                 payload: {updatedTargetAdmin, newAdmin}
             });
         }
-
         throw createError(400, 'Invalid transaction type');
-
     } catch (error) {
         next(error);
     }
@@ -233,7 +232,7 @@ const handleTransactionHistory = async (req, res, next) => {
         const admin = await Admin.findOne({userName: decodedUserName}).sort({ createdAt: -1 });
         
         const transactions = await TransactionHistory.find({adminIds: admin?.id}).sort({ createdAt: -1 });
-        console.log(transactions);
+        // console.log(transactions);
 
         return successResponse(res, {
             statusCode: 200,
@@ -272,13 +271,16 @@ const handleGetSingleAdmin = async (req, res, next) => {
 const handleGetAdmins =async (req, res, next) => {
     try { 
         const search = req?.query?.search || '';
-        const status = req?.query?.status || '';
+        let status = req?.query?.status || 'active';
+        if(status === 'all'){
+            status = ''
+        }
+        
 
         const userName = req.params?.name; 
         const decodedUserName = decodeURIComponent(userName);
 
         const parentAdmin = await Admin.findOne({userName: decodedUserName})
-        console.log(parentAdmin);
         // console.log({search, status})
 
 
@@ -354,7 +356,28 @@ const handleGetAdmins =async (req, res, next) => {
                                         input: "$downline", 
                                         as: "item",
                                         cond: {
-                                            $eq: ["$$item.role", nextRole]
+                                            $and: [
+                                                { $eq: ["$$item.role", nextRole] },
+
+                                                ...(search
+                                                    ? [{
+                                                        $regexMatch: {
+                                                            input: "$$item.userName",
+                                                            regex: search,
+                                                            options: "i"
+                                                        }
+                                                    }]
+                                                    : []),
+
+                                                ...(status
+                                                    ? [{
+                                                        $eq: [
+                                                            { $toLower: "$$item.status" },
+                                                            status.toLowerCase()
+                                                        ]
+                                                    }]
+                                                    : [])
+                                            ]
                                         }
                                     }
                                 },
@@ -586,7 +609,7 @@ const handleGetAdmins =async (req, res, next) => {
                                     }
                                 }
                             },
-                            sortBy: { createdAt: 1}
+                            sortBy: { createdAt: -1}
                         }
 
                     }

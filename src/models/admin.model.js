@@ -9,11 +9,6 @@ const adminSchema = new Schema(
       ref: "Users",
       default: null,
     },
-    refer: {
-      type: String,
-      trim: true,
-      unique: [true, 'refer code already exist']
-    },
     email: {
       type: String,
       required: [true, "Email is required"],
