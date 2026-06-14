@@ -9,6 +9,12 @@ const depositSchema = new Schema(
       ref: "Users",
       default: null,
     },
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'User id is required.'],
+      ref: "Users",
+      default: null,
+    },
     paymentType: {
       type: String,
       required: [true, 'Payment type is required.'],
